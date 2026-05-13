@@ -1,0 +1,17 @@
+CompileFlags:
+  Add:
+    - -Iinclude
+    - -Isrc
+    - -I/opt/homebrew/Cellar/glfw/3.4/include
+    - -I/opt/homebrew/Cellar/cglm/0.9.6/include
+    - -I/opt/homebrew/Cellar/freetype/2.14.1_1/include/freetype2
+    - -I/Users/tristanlowe/VulkanSDK/1.4.313.1/macOS/include
+    - -L/Users/tristanlowe/VulkanSDK/1.4.313.1/macOS/lib
+    - -framework
+    - MoltenVK
+    - -framework
+    - Metal
+    - -framework
+    - QuartzCore
+    - -lglfw
+    - -lvulkan
