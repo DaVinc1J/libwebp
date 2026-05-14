@@ -384,6 +384,7 @@ void file_decode(_app *p_app) {
 		case _FILE_TYPE_PNG:  
 			read_png(p_app);
 			decode_png(p_app);
+			unfilter_png(p_app);
 			break;
 		case _FILE_TYPE_JPG: 
 			read_jpg(p_app); 

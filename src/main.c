@@ -37,7 +37,6 @@ int main(int argc, char** argv) {
 	window_init(&app);
 	vulkan_init(&app);
 	file_init(&app, argv[1]);
-	//load_test_pattern(&app);
 	main_loop(&app);
 	clean(&app);
 }
