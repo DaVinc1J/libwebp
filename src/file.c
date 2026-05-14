@@ -233,6 +233,7 @@ static void read_png(_app *p_app) {
 						break;
 					}
 					case 3: {
+						memset(p_info->tRNS_alpha, 255, sizeof(p_info->tRNS_alpha));
 						for (u32 i = 0; i < length; i++)
 							p_info->tRNS_alpha[i] = read_u8(&data);
 						break;
@@ -354,22 +355,67 @@ static void unfilter_png(_app *p_app) {
 	free(p_info->out);
 	p_info->out = NULL;
 
-	if (p_info->colour_type == 3) {
-		usize n = (usize)p_app->output.width * p_app->output.height;
-		u8 *rgb = malloc(n * 3);
+	usize n = (usize)p_app->output.width * p_app->output.height;
+	u8 *rgba = malloc(n * 4);
+	u8 *src = p_app->output.pixels;
 
-		for (usize i = 0; i < n; i++) {
-			u8 idx = p_app->output.pixels[i];
-			rgb[i*3 + 0] = p_info->palette[idx*3 + 0];
-			rgb[i*3 + 1] = p_info->palette[idx*3 + 1];
-			rgb[i*3 + 2] = p_info->palette[idx*3 + 2];
+	switch (p_info->colour_type) {
+		case 0: {
+			u8 trns = (u8)p_info->tRNS_gray;
+			for (usize i = 0; i < n; i++) {
+				u8 g = src[i];
+				rgba[i*4 + 0] = g;
+				rgba[i*4 + 1] = g;
+				rgba[i*4 + 2] = g;
+				rgba[i*4 + 3] = (p_info->has_tRNS && g == trns) ? 0 : 255;
+			}
+			break;
 		}
-
-		free(p_app->output.pixels);
-		p_app->output.pixels = rgb;
-		p_info->channels = 3;
-		p_info->stride = p_app->output.width * 3;
+		case 2: {
+			u8 tr = (u8)p_info->tRNS_rgb[0];
+			u8 tg = (u8)p_info->tRNS_rgb[1];
+			u8 tb = (u8)p_info->tRNS_rgb[2];
+			for (usize i = 0; i < n; i++) {
+				u8 r = src[i*3 + 0];
+				u8 g = src[i*3 + 1];
+				u8 b = src[i*3 + 2];
+				rgba[i*4 + 0] = r;
+				rgba[i*4 + 1] = g;
+				rgba[i*4 + 2] = b;
+				rgba[i*4 + 3] = (p_info->has_tRNS && r == tr && g == tg && b == tb) ? 0 : 255;
+			}
+			break;
+		}
+		case 3: {
+			for (usize i = 0; i < n; i++) {
+				u8 idx = src[i];
+				rgba[i*4 + 0] = p_info->palette[idx*3 + 0];
+				rgba[i*4 + 1] = p_info->palette[idx*3 + 1];
+				rgba[i*4 + 2] = p_info->palette[idx*3 + 2];
+				rgba[i*4 + 3] = p_info->has_tRNS ? p_info->tRNS_alpha[idx] : 255;
+			}
+			break;
+		}
+		case 4: {
+			for (usize i = 0; i < n; i++) {
+				u8 g = src[i*2 + 0];
+				rgba[i*4 + 0] = g;
+				rgba[i*4 + 1] = g;
+				rgba[i*4 + 2] = g;
+				rgba[i*4 + 3] = src[i*2 + 1];
+			}
+			break;
+		}
+		case 6: {
+			memcpy(rgba, src, n * 4);
+			break;
+		}
 	}
+
+	free(p_app->output.pixels);
+	p_app->output.pixels = rgba;
+	p_info->channels = 4;
+	p_info->stride = p_app->output.width * 4;
 }
 
 static void read_jpg(_app *p_app) {

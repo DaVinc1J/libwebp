@@ -99,6 +99,33 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 													 p_app->pipeline.layout, 0, 1,
 													 &p_app->descriptor.sets[p_app->sync.frame_index], 0, NULL);
+		_pc pc = {0};
+		float img = (float)p_app->output.width / p_app->output.height;
+		float win = (float)p_app->swp.extent.width / p_app->swp.extent.height;
+		float scale[2] = { 1.0f, 1.0f };
+		if (win > img) {
+			pc.uv_scale[0] = img / win;
+		} else {
+			pc.uv_scale[1] = win / img;
+		}
+
+		pc.border_uv[0] = p_app->config.border_px / (float)p_app->image.width;
+		pc.border_uv[1] = p_app->config.border_px / (float)p_app->image.height;
+
+		pc.border_colour[0] = p_app->config.border_colour[0];
+		pc.border_colour[1] = p_app->config.border_colour[1];
+		pc.border_colour[2] = p_app->config.border_colour[2];
+		pc.border_colour[3] = p_app->config.border_colour[3];
+
+		pc.background_colour[0] = p_app->config.background_colour[0];
+		pc.background_colour[1] = p_app->config.background_colour[1];
+		pc.background_colour[2] = p_app->config.background_colour[2];
+		pc.background_colour[3] = p_app->config.background_colour[3];
+
+		pc.blur = p_app->config.blur;
+
+		vkCmdPushConstants(command_buffer, p_app->pipeline.layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(_pc), &pc);
+
 		vkCmdDraw(command_buffer, 3, 1, 0, 0);
 	}
 

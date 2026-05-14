@@ -45,6 +45,9 @@ void file_init(_app *p_app, const char* argv) {
 	file_setup(p_app, argv);
 	file_read(p_app);
 	file_decode(p_app);
+	glfwSetWindowSize(p_app->win.window, p_app->output.width, p_app->output.height);
+	glfwShowWindow(p_app->win.window);
+	set_image_data(p_app);
 }
 
 void vulkan_init(_app *p_app) {
@@ -86,11 +89,16 @@ static void load_test_pattern(_app *p_app) {
 
 void main_loop(_app *p_app) {
 	while (!glfwWindowShouldClose(p_app->win.window)) {
+		int w = 0, h = 0;
+		glfwGetFramebufferSize(p_app->win.window, &w, &h);
+		if (w == 0 || h == 0) {
+			glfwWaitEvents();
+			continue;
+		}
 		glfwPollEvents();
 		log_performance(p_app);
 		draw_frame(p_app);
 	}
-
 	vkDeviceWaitIdle(p_app->device.logical);
 }
 

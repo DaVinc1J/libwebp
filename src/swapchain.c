@@ -19,17 +19,21 @@ VkSurfaceFormatKHR choose_swapchain_surface_format(_app *p_app, _swapchain_suppo
 }
 
 VkPresentModeKHR choose_swapchain_present_mode(_app *p_app, _swapchain_support *p_support) {
-	for (u32 i = 0; i  < p_support->present_modes_count; i++) {
+	for (u32 i = 0; i < p_support->present_modes_count; i++) {
 		if (p_support->present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
 			return p_support->present_modes[i];
 		}
 	}
 
-	submit_debug_message(
-		p_app->inst.instance,
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
-		"swapchain present mode => mailbox present mode not found, falling back to fifo"
-	);
+	static bool8 warned = false;
+	if (!warned) {
+		warned = true;
+		submit_debug_message(
+			p_app->inst.instance,
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
+			"swapchain present mode => mailbox present mode not found, falling back to fifo"
+		);
+	}
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -62,6 +66,14 @@ void create_swapchain(_app *p_app) {
 		image_count = support.capabilities.maxImageCount;
 	}
 
+	VkCompositeAlphaFlagBitsKHR composite = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	if (support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+    composite = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+	else if (support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+    composite = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+	else if (support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
+    composite = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+
 	VkSwapchainCreateInfoKHR swapchain_create_info = {
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 		.surface = p_app->swp.surface,
@@ -72,7 +84,7 @@ void create_swapchain(_app *p_app) {
 		.imageArrayLayers = 1,
 		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		.preTransform = support.capabilities.currentTransform,
-		.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+		.compositeAlpha = composite,
 		.presentMode = present_mode,
 		.clipped = VK_TRUE,
 		.oldSwapchain = VK_NULL_HANDLE,
@@ -184,10 +196,8 @@ void cleanup_swapchain(_app *p_app) {
 
 void recreate_swapchain(_app *p_app) {
 	int width = 0, height = 0;
-	while (width == 0 || height == 0) {
-		glfwGetFramebufferSize(p_app->win.window, &width, &height);
-		glfwWaitEvents();
-	}
+	glfwGetFramebufferSize(p_app->win.window, &width, &height);
+	if (width == 0 || height == 0) return;
 
 	vkDeviceWaitIdle(p_app->device.logical);
 

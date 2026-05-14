@@ -2,7 +2,7 @@
 #include "headers/validation.h"
 #include "headers/buffer.h"
 
-#define IMAGE_FORMAT VK_FORMAT_R8G8B8A8_UNORM
+#define IMAGE_FORMAT VK_FORMAT_R8G8B8A8_SRGB
 
 void create_image(_app *p_app, VkImage *p_image, VmaAllocation *p_allocation, u32 width, u32 height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VmaMemoryUsage memory_usage) {
 	VkImageCreateInfo image_create_info = {
@@ -220,9 +220,9 @@ void create_image_resources(_app *p_app, u32 width, u32 height) {
 
 	VmaAllocationInfo allocation_info;
 	if (vmaCreateBuffer(p_app->mem.alloc, &buffer_create_info, &alloc_create_info,
-											&p_app->image.staging_buffer,
-											&p_app->image.staging_allocation,
-											&allocation_info) != VK_SUCCESS) {
+										 &p_app->image.staging_buffer,
+										 &p_app->image.staging_allocation,
+										 &allocation_info) != VK_SUCCESS) {
 		submit_debug_message(
 			p_app->inst.instance,
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,

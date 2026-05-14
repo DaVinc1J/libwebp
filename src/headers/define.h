@@ -104,6 +104,14 @@ typedef struct _png_info {
 	usize out_size;
 } _png_info;
 
+typedef struct _pc {
+	f32 uv_scale[2];
+	f32 border_uv[2];
+	f32 border_colour[4];
+	f32 background_colour[4];
+	f32 blur;
+} _pc;
+
 typedef struct _candidates {
 	VkPhysicalDevice *p_physical_device;
 	u32 score;
@@ -190,6 +198,10 @@ typedef struct _app_config {
 	char *vert_shader;
 	char *frag_shader;
 	bool8 print_fps;
+	f32 border_px;
+	f32 border_colour[4];
+	f32 background_colour[4];
+	f32 blur;
 } _app_config;
 
 typedef struct _app_performance {

@@ -114,10 +114,18 @@ void create_graphics_pipeline(_app *p_app) {
 		.pAttachments = &blend_attachment,
 	};
 
+	VkPushConstantRange pc = {
+    .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+    .offset = 0,
+    .size = sizeof(_pc),
+	};
+
 	VkPipelineLayoutCreateInfo layout_info = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 		.setLayoutCount = 1,
 		.pSetLayouts = &p_app->pipeline.descriptor_set_layout,
+		.pPushConstantRanges = &pc,
+		.pushConstantRangeCount = 1,
 	};
 
 	if (vkCreatePipelineLayout(p_app->device.logical, &layout_info, NULL, &p_app->pipeline.layout) != VK_SUCCESS) {
