@@ -102,7 +102,8 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 		_pc pc = {0};
 		float img = (float)p_app->output.width / p_app->output.height;
 		float win = (float)p_app->swp.extent.width / p_app->swp.extent.height;
-		float scale[2] = { 1.0f, 1.0f };
+		pc.uv_scale[0] = 1.0f;
+		pc.uv_scale[1] = 1.0f;
 		if (win > img) {
 			pc.uv_scale[0] = img / win;
 		} else {
@@ -121,8 +122,6 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 		pc.background_colour[1] = p_app->config.background_colour[1];
 		pc.background_colour[2] = p_app->config.background_colour[2];
 		pc.background_colour[3] = p_app->config.background_colour[3];
-
-		pc.blur = p_app->config.blur;
 
 		vkCmdPushConstants(command_buffer, p_app->pipeline.layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(_pc), &pc);
 

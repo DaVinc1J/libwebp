@@ -25,14 +25,18 @@ LDFLAGS = \
 					-Wl,-rpath,/Users/tristanlowe/VulkanSDK/1.4.313.1/macOS/lib \
 					-framework Metal \
 					-framework QuartzCore \
+					-framework Cocoa \
 					-lz
 
 SRC_C = $(wildcard src/*.c)
 OBJ_C = $(SRC_C:src/%.c=build/%.o)
 
+SRC_M = $(wildcard src/*.m)
+OBJ_M = $(SRC_M:src/%.m=build/%.o)
+
 LBR_OBJ = build/libraries.o
 
-OBJ = $(OBJ_C) $(LBR_OBJ)
+OBJ = $(OBJ_C) $(OBJ_M) $(LBR_OBJ)
 
 BIN = build/app
 
@@ -60,6 +64,10 @@ $(BIN): $(OBJ)
 build/%.o: src/%.c
 	mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
+
+build/%.o: src/%.m
+	mkdir -p build
+	$(CC) $(CFLAGS) -fobjc-arc -c $< -o $@
 
 ##########################
 ### Fast Relink Only ###

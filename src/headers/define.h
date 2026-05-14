@@ -25,6 +25,11 @@ extern "C" {
 }
 #endif
 
+#ifdef __APPLE__
+#define GLFW_EXPOSE_NATIVE_COCOA
+#include <GLFW/glfw3native.h>
+#endif
+
 #define PNG_CHUNK_IHDR ('I'<<24 | 'H'<<16 | 'D'<<8 | 'R')
 #define PNG_CHUNK_IDAT ('I'<<24 | 'D'<<16 | 'A'<<8 | 'T')
 #define PNG_CHUNK_IEND ('I'<<24 | 'E'<<16 | 'N'<<8 | 'D')
@@ -109,7 +114,6 @@ typedef struct _pc {
 	f32 border_uv[2];
 	f32 border_colour[4];
 	f32 background_colour[4];
-	f32 blur;
 } _pc;
 
 typedef struct _candidates {
@@ -201,7 +205,6 @@ typedef struct _app_config {
 	f32 border_px;
 	f32 border_colour[4];
 	f32 background_colour[4];
-	f32 blur;
 } _app_config;
 
 typedef struct _app_performance {

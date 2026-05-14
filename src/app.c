@@ -18,9 +18,7 @@ void app_init(_app *p_app) {
 	p_app->config.background_colour[0] = 0.0f;
 	p_app->config.background_colour[1] = 0.0f;
 	p_app->config.background_colour[2] = 0.0f;
-	p_app->config.background_colour[3] = 0.25f;
-
-	p_app->config.blur = 0.5f;
+	p_app->config.background_colour[3] = 0.1f;
 
 	p_app->sync.frame_index = 0;
 }
