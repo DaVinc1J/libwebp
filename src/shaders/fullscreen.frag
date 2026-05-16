@@ -15,16 +15,21 @@ layout(push_constant) uniform PC {
 void main() {
     vec2 uv = (in_uv - 0.5) / pc.uv_scale + 0.5;
 
+    vec4 base;
+
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-        out_colour = pc.background_colour; // premultiplied: alpha controls tint strength
-        return;
+        base = pc.background_colour;
     }
 
-    if (uv.x < pc.border_uv.x || uv.x > 1.0 - pc.border_uv.x ||
-            uv.y < pc.border_uv.y || uv.y > 1.0 - pc.border_uv.y) {
-        out_colour = pc.border_colour;
-        return;
+    if (in_uv.x < pc.border_uv.x || in_uv.x > 1.0 - pc.border_uv.x ||
+            in_uv.y < pc.border_uv.y || in_uv.y > 1.0 - pc.border_uv.y) {
+        if (pc.border_colour.a > 0.0) {
+            out_colour = vec4(
+                    mix(base.rgb, pc.border_colour.rgb, pc.border_colour.a),
+                    max(base.a, pc.border_colour.a)
+                );
+            return;
+        }
     }
-
-    out_colour = texture(u_texture, uv);
+    out_colour = base;
 }

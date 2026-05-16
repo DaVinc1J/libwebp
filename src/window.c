@@ -16,7 +16,9 @@ void window_init(_app *p_app) {
 	p_app->win.window = glfwCreateWindow(p_app->config.width, p_app->config.height, p_app->config.title, NULL, NULL);
 
 #ifdef __APPLE__
-    macos_install_backdrop(glfwGetCocoaWindow(p_app->win.window));
+	if (p_app->config.blur) {
+		macos_install_backdrop(glfwGetCocoaWindow(p_app->win.window));
+	}
 #endif
 
 	glfwSetWindowUserPointer(p_app->win.window, p_app);

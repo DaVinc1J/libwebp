@@ -7,18 +7,18 @@ void app_init(_app *p_app) {
 	p_app->config.vert_shader = "src/shaders/fullscreen.vert.spv";
 	p_app->config.frag_shader = "src/shaders/fullscreen.frag.spv";
 	p_app->config.print_fps = false;
-	p_app->config.border_px = 4.0f;
-
+	p_app->config.border_px = 16.0f;
+	p_app->config.blur = true;
 
 	p_app->config.border_colour[0] = 0.0f;
 	p_app->config.border_colour[1] = 0.0f;
 	p_app->config.border_colour[2] = 0.0f;
-	p_app->config.border_colour[3] = 1.0f;
+	p_app->config.border_colour[3] = 0.0f;
 
 	p_app->config.background_colour[0] = 0.0f;
 	p_app->config.background_colour[1] = 0.0f;
 	p_app->config.background_colour[2] = 0.0f;
-	p_app->config.background_colour[3] = 0.1f;
+	p_app->config.background_colour[3] = 0.5f;
 
 	p_app->sync.frame_index = 0;
 }

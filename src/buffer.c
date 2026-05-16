@@ -70,7 +70,7 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 		exit(EXIT_FAILURE);
 	}
 
-	VkClearValue clear_value = { .color = {{0.0f, 0.0f, 0.0f, 1.0f}} };
+	VkClearValue clear_value = { .color = {{0.0f, 0.0f, 0.0f, 0.0f}} };
 
 	VkRenderPassBeginInfo render_pass_info = {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -110,8 +110,8 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 			pc.uv_scale[1] = win / img;
 		}
 
-		pc.border_uv[0] = p_app->config.border_px / (float)p_app->image.width;
-		pc.border_uv[1] = p_app->config.border_px / (float)p_app->image.height;
+		pc.border_uv[0] = p_app->config.border_px / (float)p_app->swp.extent.width;
+		pc.border_uv[1] = p_app->config.border_px / (float)p_app->swp.extent.height;
 
 		pc.border_colour[0] = p_app->config.border_colour[0];
 		pc.border_colour[1] = p_app->config.border_colour[1];

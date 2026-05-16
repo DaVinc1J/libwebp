@@ -14,6 +14,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
+#include <cglm/cglm.h>
 
 #include <zlib.h>
 
@@ -205,6 +206,8 @@ typedef struct _app_config {
 	f32 border_px;
 	f32 border_colour[4];
 	f32 background_colour[4];
+	bool8 border;
+	bool8 blur;
 } _app_config;
 
 typedef struct _app_performance {
