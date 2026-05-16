@@ -17,7 +17,6 @@ void vulkan_init(_app *p_app);
 void file_init(_app *p_app, const char* argv);
 void clean(_app *p_app);
 void main_loop(_app *p_app);
-static void load_test_pattern(_app *p_app);
 
 const u32 MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -25,6 +24,20 @@ u32 clamp(u32 n, u32 min, u32 max) {
 	if (n < min) return min;
 	if (n > max) return max;
 	return n;
+}
+
+u32 minu32(u32 x, u32 y) {
+	if (x > y) {
+		return y;
+	}
+	return x;
+}
+
+f32 maxf32(f32 x, f32 y) {
+	if (x > y) {
+		return x;
+	}
+	return y;
 }
 
 int main(int argc, char** argv) {
@@ -45,7 +58,7 @@ void file_init(_app *p_app, const char* argv) {
 	file_setup(p_app, argv);
 	file_read(p_app);
 	file_decode(p_app);
-	glfwSetWindowSize(p_app->win.window, p_app->output.width, p_app->output.height);
+	glfwSetWindowSize(p_app->win.window, minu32(p_app->output.width, 800), minu32(p_app->output.height, 600));
 	glfwShowWindow(p_app->win.window);
 	set_image_data(p_app);
 }

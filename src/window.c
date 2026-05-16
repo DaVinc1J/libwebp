@@ -7,17 +7,26 @@ static void window_refresh_callback(GLFWwindow* window) {
 	draw_frame(p_app);
 }
 
+static void on_edit_toggled(int active) {
+    if (active) {
+        printf("ensure edit window is opened");
+    } else {
+        printf("ensure edit window is closed");
+    }
+}
+
 void window_init(_app *p_app) {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
-	p_app->win.window = glfwCreateWindow(p_app->config.width, p_app->config.height, p_app->config.title, NULL, NULL);
+	p_app->win.window = glfwCreateWindow(minu32(p_app->config.width, 800), minu32(p_app->config.height, 600), p_app->config.title, NULL, NULL);
 
 #ifdef __APPLE__
 	if (p_app->config.blur) {
 		macos_install_backdrop(glfwGetCocoaWindow(p_app->win.window));
+		macos_set_edit_callback(on_edit_toggled);
 	}
 #endif
 

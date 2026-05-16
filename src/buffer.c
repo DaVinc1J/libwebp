@@ -100,8 +100,10 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 													 p_app->pipeline.layout, 0, 1,
 													 &p_app->descriptor.sets[p_app->sync.frame_index], 0, NULL);
 		_pc pc = {0};
+		float inner_w = (float)p_app->swp.extent.width  - 2.0f * p_app->config.border_px;
+		float inner_h = (float)p_app->swp.extent.height - p_app->config.title_px - p_app->config.border_px;
 		float img = (float)p_app->output.width / p_app->output.height;
-		float win = (float)p_app->swp.extent.width / p_app->swp.extent.height;
+		float win = inner_w / inner_h;
 		pc.uv_scale[0] = 1.0f;
 		pc.uv_scale[1] = 1.0f;
 		if (win > img) {
@@ -113,15 +115,11 @@ void record_command_buffer(_app *p_app, VkCommandBuffer command_buffer, uint32_t
 		pc.border_uv[0] = p_app->config.border_px / (float)p_app->swp.extent.width;
 		pc.border_uv[1] = p_app->config.border_px / (float)p_app->swp.extent.height;
 
-		pc.border_colour[0] = p_app->config.border_colour[0];
-		pc.border_colour[1] = p_app->config.border_colour[1];
-		pc.border_colour[2] = p_app->config.border_colour[2];
-		pc.border_colour[3] = p_app->config.border_colour[3];
+		pc.title_uv = p_app->config.title_px / (float)p_app->swp.extent.height;
 
-		pc.background_colour[0] = p_app->config.background_colour[0];
-		pc.background_colour[1] = p_app->config.background_colour[1];
-		pc.background_colour[2] = p_app->config.background_colour[2];
-		pc.background_colour[3] = p_app->config.background_colour[3];
+		glm_vec4_copy(p_app->config.title_colour, pc.title_colour);
+		glm_vec4_copy(p_app->config.border_colour, pc.border_colour);
+		glm_vec4_copy(p_app->config.background_colour, pc.background_colour);
 
 		vkCmdPushConstants(command_buffer, p_app->pipeline.layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(_pc), &pc);
 

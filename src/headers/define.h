@@ -38,6 +38,8 @@ extern "C" {
 #define PNG_CHUNK_tRNS ('t'<<24 | 'R'<<16 | 'N'<<8 | 'S')
 #define PNG_CHUNK_gAMA ('g'<<24 | 'A'<<16 | 'M'<<8 | 'A')
 
+#define TITLE_PX_MIN 55.0f
+
 #define true  1
 #define false 0
 
@@ -68,6 +70,8 @@ typedef enum _FILE_TYPE {
 extern const u32 MAX_FRAMES_IN_FLIGHT;
 
 u32 clamp(u32 n, u32 min, u32 max);
+u32 minu32(u32 x, u32 y);
+f32 maxf32(f32 x, f32 y);
 
 typedef struct _queue_family_indices {
 	u32 graphics_family;
@@ -111,10 +115,12 @@ typedef struct _png_info {
 } _png_info;
 
 typedef struct _pc {
-	f32 uv_scale[2];
-	f32 border_uv[2];
-	f32 border_colour[4];
-	f32 background_colour[4];
+	vec2 uv_scale;
+	vec2 border_uv;
+	vec4 border_colour;
+	vec4 background_colour;
+	vec4 title_colour;
+	f32 title_uv;
 } _pc;
 
 typedef struct _candidates {
@@ -204,8 +210,10 @@ typedef struct _app_config {
 	char *frag_shader;
 	bool8 print_fps;
 	f32 border_px;
-	f32 border_colour[4];
-	f32 background_colour[4];
+	f32 title_px;
+	vec4 border_colour;
+	vec4 background_colour;
+	vec4 title_colour;
 	bool8 border;
 	bool8 blur;
 } _app_config;
