@@ -26,8 +26,8 @@ void window_init(_app *p_app) {
 #ifdef __APPLE__
 	if (p_app->config.blur) {
 		macos_install_backdrop(glfwGetCocoaWindow(p_app->win.window));
-		macos_set_edit_callback(on_edit_toggled);
 	}
+	macos_set_edit_callback(on_edit_toggled);
 #endif
 
 	glfwSetWindowUserPointer(p_app->win.window, p_app);
