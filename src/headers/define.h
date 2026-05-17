@@ -104,10 +104,7 @@ typedef void*     rawptr;
 typedef const u8* bytes;
 
 typedef u8 _dir;
-typedef enum _direction {
-	LEFT,
-	RIGHT,
-} _direction;
+enum { LEFT = 0, RIGHT = 1 };
 
 typedef enum _FILE_TYPE {
 	_FILE_TYPE_NONE,

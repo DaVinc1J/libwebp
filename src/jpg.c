@@ -22,12 +22,12 @@ static void ensure_node_cap(_jpg_info *p_info, u8 type, u8 id, i32 need) {
 	p_info->ht_node_count.raw[type][id] = need;
 }
 
-static i32 create_node(_jpg_info *p_info, u8 type, u8 id, bool8 root) {
+static i32 create_node(_jpg_info *p_info, u8 type, u8 id, bool8 is_root) {
 	i32 idx = p_info->ht_node_count.raw[type][id];
 	ensure_node_cap(p_info, type, id, idx + 1);
 
 	_huffman_table_node *n = &p_info->ht_nodes.raw[type][id][idx];
-	n->root = root;
+	n->root = is_root;
 	n->leaf = false;
 	n->code[0] = '\0';
 	n->value = 0;
@@ -60,78 +60,39 @@ static void insert(_jpg_info *p_info, u8 type, u8 id, i32 parent, _dir direction
 	}
 }
 
-static i32 get_right_level_node(_jpg_info *p_info, u8 type, u8 id, i32 node) {
-	if (node == HT_NODE_NIL) return HT_NODE_NIL;
-	_huffman_table_node *nodes = p_info->ht_nodes.raw[type][id];
-
-	i32 parent = nodes[node].parent;
-	if (parent != HT_NODE_NIL && nodes[parent].child[LEFT] == node) {
-		return nodes[parent].child[RIGHT];
-	}
-
-	i32 count = 0;
-	i32 cur = node;
-	while (nodes[cur].parent != HT_NODE_NIL && nodes[nodes[cur].parent].child[RIGHT] == cur) {
-		cur = nodes[cur].parent;
-		count++;
-	}
-	if (nodes[cur].parent == HT_NODE_NIL) return HT_NODE_NIL;
-	cur = nodes[nodes[cur].parent].child[RIGHT];
-
-	while (count > 0) {
-		if (cur == HT_NODE_NIL) 
-			return HT_NODE_NIL;
-
-		cur = nodes[cur].child[LEFT];
-		count--;
-	}
-	return cur;
-}
-
 static void build_huffman_tree(_jpg_info *p_info, u8 type, u8 id) {
 	_huffman_table *table = &p_info->ht.raw[type][id];
+	printf("hello1\n");
 
 	i32 root = create_node(p_info, type, id, true);
+
+	printf("hello2\n");
 	p_info->ht_root.raw[type][id] = root;
 	insert(p_info, type, id, root, LEFT);
 	insert(p_info, type, id, root, RIGHT);
 
-	i32 left_most = p_info->ht_nodes.raw[type][id][root].child[LEFT];
+	i32 level_start = root + 1;
+	i32 level_end = p_info->ht_node_count.raw[type][id];
+	printf("%d\n", level_end);
 	i32 sym_off = 0;
 
-	for (i32 i = 0; i < 16; i++) {
-		i32 count = table->count[i];
+	for (i32 i = 1; i <= 16; i++) {
+		i32 count = table->count[i - 1];
+		i32 new_start = p_info->ht_node_count.raw[type][id];
 
-		if (count == 0) {
-			for (i32 n = left_most; n != HT_NODE_NIL; n = get_right_level_node(p_info, type, id, n)) {
-				insert(p_info, type, id, n, LEFT);
-				insert(p_info, type, id, n, RIGHT);
-			}
-			if (left_most != HT_NODE_NIL) {
-				left_most = p_info->ht_nodes.raw[type][id][left_most].child[LEFT];
-			}
-		} else {
-			for (i32 s = 0; s < count && left_most != HT_NODE_NIL; s++) {
+		for (i32 s = level_start; s < level_end; s++) {
+			if (s - level_start < count) {
 				_huffman_table_node *nodes = p_info->ht_nodes.raw[type][id];
-				nodes[left_most].value = table->symbols[sym_off++];
-				nodes[left_most].leaf  = true;
-				left_most = get_right_level_node(p_info, type, id, left_most);
+				nodes[s].value = table->symbols[sym_off++];
+				nodes[s].leaf  = true;
+				continue;
 			}
 
-			if (left_most == HT_NODE_NIL) continue;
-
-			// Extend all remaining nodes on this level to form the next level.
-			insert(p_info, type, id, left_most, LEFT);
-			insert(p_info, type, id, left_most, RIGHT);
-			i32 nptr = get_right_level_node(p_info, type, id, left_most);
-			i32 next_left_most = p_info->ht_nodes.raw[type][id][left_most].child[LEFT];
-			while (nptr != HT_NODE_NIL) {
-				insert(p_info, type, id, nptr, LEFT);
-				insert(p_info, type, id, nptr, RIGHT);
-				nptr = get_right_level_node(p_info, type, id, nptr);
-			}
-			left_most = next_left_most;
+			insert(p_info, type, id, s, LEFT);
+			insert(p_info, type, id, s, RIGHT);
 		}
+		level_start = new_start;
+		level_end = p_info->ht_node_count.raw[type][id];
 	}
 }
 
@@ -245,6 +206,7 @@ static void read_jpg(_app *p_app) {
 				}
 
 				p_info->ht_set.raw[type][id] = true;
+				build_huffman_tree(p_info, type, id);
 				break;
 			}
 
