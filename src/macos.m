@@ -46,22 +46,19 @@ NSButton *_btn;
 }
 @end
 
-void macos_install_backdrop(void *nswindow) {
+static NSVisualEffectView *s_vfx = NULL;
+
+void macos_install_blur(void *nswindow) {
 	NSWindow *w = (__bridge NSWindow *)nswindow;
-	w.opaque = NO;
-	w.backgroundColor = [NSColor clearColor];
 	NSView *glfw = w.contentView;
 	NSRect bounds = glfw.bounds;
-	NSVisualEffectView *vfx = [[NSVisualEffectView alloc] initWithFrame:bounds];
-	w.titlebarAppearsTransparent = YES;
-	w.styleMask |= NSWindowStyleMaskFullSizeContentView;
-	w.titleVisibility = NSWindowTitleHidden;
-	vfx.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-	vfx.blendingMode = NSVisualEffectBlendingModeBehindWindow;
-	vfx.material = NSVisualEffectMaterialHUDWindow;
-	vfx.state = NSVisualEffectStateActive;
-	w.contentView = vfx;
-	[vfx addSubview:glfw];
+	s_vfx = [[NSVisualEffectView alloc] initWithFrame:bounds];
+	s_vfx.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+	s_vfx.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+	s_vfx.material = NSVisualEffectMaterialHUDWindow;
+	s_vfx.state = NSVisualEffectStateActive;
+	w.contentView = s_vfx;
+	[s_vfx addSubview:glfw];
 	glfw.frame = bounds;
 	glfw.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 	if ([glfw.layer isKindOfClass:[CAMetalLayer class]]) {
@@ -75,8 +72,15 @@ void macos_install_backdrop(void *nswindow) {
 			}
 		}
 	}
+}
 
-	// Edit button pinned to right, transparent to match hidden titlebar
+void macos_install_backdrop(void *nswindow) {
+	NSWindow *w = (__bridge NSWindow *)nswindow;
+	w.opaque = NO;
+	w.backgroundColor = [NSColor clearColor];
+	w.titlebarAppearsTransparent = YES;
+	w.styleMask |= NSWindowStyleMaskFullSizeContentView;
+	w.titleVisibility = NSWindowTitleHidden;
 	EditButtonController *edit = [[EditButtonController alloc] init];
 	edit.layoutAttribute = NSLayoutAttributeRight;
 	[w addTitlebarAccessoryViewController:edit];

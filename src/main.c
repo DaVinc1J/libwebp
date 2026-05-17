@@ -12,6 +12,7 @@
 #include "headers/descriptors.h"
 #include "headers/loop.h"
 #include "headers/file.h"
+#include "headers/helper.h"
 
 void vulkan_init(_app *p_app);
 void file_init(_app *p_app, const char* argv);
@@ -19,26 +20,6 @@ void clean(_app *p_app);
 void main_loop(_app *p_app);
 
 const u32 MAX_FRAMES_IN_FLIGHT = 2;
-
-u32 clamp(u32 n, u32 min, u32 max) {
-	if (n < min) return min;
-	if (n > max) return max;
-	return n;
-}
-
-u32 minu32(u32 x, u32 y) {
-	if (x > y) {
-		return y;
-	}
-	return x;
-}
-
-f32 maxf32(f32 x, f32 y) {
-	if (x > y) {
-		return x;
-	}
-	return y;
-}
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -60,7 +41,7 @@ void file_init(_app *p_app, const char* argv) {
 	file_decode(p_app);
 	glfwSetWindowSize(p_app->win.window, minu32(p_app->output.width, 800), minu32(p_app->output.height, 600));
 	glfwShowWindow(p_app->win.window);
-	set_image_data(p_app);
+	//set_image_data(p_app);
 }
 
 void vulkan_init(_app *p_app) {
@@ -81,23 +62,6 @@ void vulkan_init(_app *p_app) {
 	create_descriptor_sets(p_app);
 	create_command_buffers(p_app);
 	create_sync_objects(p_app);
-}
-
-static void load_test_pattern(_app *p_app) {
-	p_app->output.width = 512;
-	p_app->output.height = 512;
-	p_app->output.pixels = malloc((size_t)p_app->output.width * p_app->output.height * 4);
-	for (u32 y = 0; y < p_app->output.height; y++) {
-		for (u32 x = 0; x < p_app->output.width; x++) {
-			u8 *px = &(p_app->output.pixels)[(y * p_app->output.width + x) * 4];
-			px[0] = (u8)x;
-			px[1] = (u8)y;
-			px[2] = (u8)((x ^ y) & 0xFF);
-			px[3] = 255;
-		}
-	}
-	set_image_data(p_app);
-	free(p_app->output.pixels);
 }
 
 void main_loop(_app *p_app) {

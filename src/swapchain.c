@@ -1,6 +1,7 @@
 #include "headers/swapchain.h"
 #include "headers/validation.h"
 #include "headers/core.h"
+#include "headers/helper.h"
 
 VkSurfaceFormatKHR choose_swapchain_surface_format(_app *p_app, _swapchain_support *p_support) {
 

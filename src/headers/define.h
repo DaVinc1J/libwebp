@@ -31,6 +31,7 @@ extern "C" {
 #include <GLFW/glfw3native.h>
 #endif
 
+#define PNG_SIG 0x89504e470d0a1a0a
 #define PNG_CHUNK_IHDR ('I'<<24 | 'H'<<16 | 'D'<<8 | 'R')
 #define PNG_CHUNK_IDAT ('I'<<24 | 'D'<<16 | 'A'<<8 | 'T')
 #define PNG_CHUNK_IEND ('I'<<24 | 'E'<<16 | 'N'<<8 | 'D')
@@ -38,10 +39,53 @@ extern "C" {
 #define PNG_CHUNK_tRNS ('t'<<24 | 'R'<<16 | 'N'<<8 | 'S')
 #define PNG_CHUNK_gAMA ('g'<<24 | 'A'<<16 | 'M'<<8 | 'A')
 
+#define JPG_SOI   0xffd8
+#define JPG_APP_0 0xffe0
+#define JPG_COM   0xfffe
+#define JPG_DQT   0xffdb
+#define JPG_SOF_0 0xffc0
+#define JPG_DHT   0xffc4
+#define JPG_SOS   0xffda
+#define JPG_EOI   0xffd9
+
+#define WEBP_RIFF_SIG 0x52494646
+#define WEBP_SIG 0x57454250
+
 #define TITLE_PX_MIN 55.0f
 
 #define true  1
 #define false 0
+
+#define DEFINE_HT_ID_TYPE(type_name, T) \
+typedef union type_name {               \
+	T raw[2];      	  									  \
+	struct {             									\
+		T dc;  		 													\
+		T ac;	  	 													\
+	};      								              \
+} type_name;
+
+#define DEFINE_HT_PAIR_TYPE(type_name, T) \
+typedef union type_name {                 \
+	T raw[2][2];                            \
+	struct { T dc[2]; T ac[2]; };           \
+	struct {                                \
+		T dc_y; T dc_cbcr;                  	\
+		T ac_y; T ac_cbcr;                  	\
+	};                                      \
+} type_name;
+
+#define DEFINE_HT_NODES_TYPE(type_name, T) \
+typedef union type_name {                  \
+	T *raw[2][2];                            \
+	struct { T *dc[2]; T *ac[2]; };          \
+	struct {                                 \
+		T *dc_y;                               \
+		T *dc_cbcr;                         	 \
+		T *ac_y;                             	 \
+		T *ac_cbcr;                          	 \
+	};                                       \
+} type_name;
 
 typedef uint8_t 	u8;
 typedef uint16_t 	u16;
@@ -69,10 +113,6 @@ typedef enum _FILE_TYPE {
 
 extern const u32 MAX_FRAMES_IN_FLIGHT;
 
-u32 clamp(u32 n, u32 min, u32 max);
-u32 minu32(u32 x, u32 y);
-f32 maxf32(f32 x, f32 y);
-
 typedef struct _queue_family_indices {
 	u32 graphics_family;
 	u32 present_family;
@@ -95,24 +135,78 @@ typedef struct _png_info {
 	u8 channels;
 	u32 stride;
 
-  u8 palette[256 * 3];
-  u32 palette_size;
+	u8 palette[256 * 3];
+	u32 palette_size;
 
-  bool8 has_tRNS;
-  u16 tRNS_gray;
-  u16 tRNS_rgb[3];
-  u8 tRNS_alpha[256];
+	bool8 has_tRNS;
+	u16 tRNS_gray;
+	u16 tRNS_rgb[3];
+	u8 tRNS_alpha[256];
 
-  bool8 has_gAMA;
-  f32 gamma;
+	bool8 has_gAMA;
+	f32 gamma;
 
-  u8 *idat_buf;
-  usize idat_size;
-  usize idat_cap;
+	u8 *idat_buf;
+	usize idat_size;
+	usize idat_cap;
 
 	u8 *out;
 	usize out_size;
 } _png_info;
+
+typedef struct _huffman_table {
+	i32  count[16];
+	u8   symbols[256];
+	i32  symbol_count;
+} _huffman_table;
+
+typedef struct _huffman_table_node {
+	bool8  leaf;
+	char   code[17];         // huffman code as bit string (max 16 bits + null)
+	u16    value;
+	i32    left;             // index into ht_nodes[], -1 = none
+	i32    right;
+	i32    parent;
+} _huffman_table_node;
+
+DEFINE_HT_ID_TYPE(_ht_id, u8)
+typedef struct _component {
+	u8 id;
+	u8 h_samp;
+	u8 v_samp;
+	u8 qt_id;
+	_ht_id ht_id; 
+} _component;
+
+DEFINE_HT_PAIR_TYPE(_ht_table, _huffman_table)
+DEFINE_HT_PAIR_TYPE(_ht_set, bool8)
+DEFINE_HT_PAIR_TYPE(_ht_root, i32)
+DEFINE_HT_PAIR_TYPE(_ht_node_count, i32)
+DEFINE_HT_NODES_TYPE(_ht_nodes, _huffman_table_node)
+typedef struct _jpg_info {
+	u8 comp_count;
+	_component comp[3];
+
+	u16 qt[4][64];
+	bool8 qt_set[4];
+
+	_ht_table ht;
+	_ht_set ht_set;
+	_ht_root ht_root;
+	_ht_node_count ht_node_count;
+	_ht_nodes ht_nodes;
+
+	bytes scan_data;
+	usize scan_size;
+
+	i32 dc_pred[3];
+
+	i32 (*mcu_data)[3][64];
+	i32 mcu_count;
+
+	u8 *out;
+	usize out_size;
+} _jpg_info;
 
 typedef struct _pc {
 	vec2 uv_scale;

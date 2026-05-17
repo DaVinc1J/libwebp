@@ -1,6 +1,7 @@
 #include "headers/window.h"
 #include "headers/loop.h"
 #include "headers/macos.h"
+#include "headers/helper.h"
 
 static void window_refresh_callback(GLFWwindow* window) {
 	_app *p_app = (_app*)glfwGetWindowUserPointer(window);
@@ -8,11 +9,13 @@ static void window_refresh_callback(GLFWwindow* window) {
 }
 
 static void on_edit_toggled(int active) {
-    if (active) {
-        printf("ensure edit window is opened");
-    } else {
-        printf("ensure edit window is closed");
-    }
+	if (active) {
+		printf("ensure edit window is opened\n");
+		fflush(stdout);
+	} else {
+		printf("ensure edit window is closed\n");
+		fflush(stdout);
+	}
 }
 
 void window_init(_app *p_app) {
@@ -24,8 +27,9 @@ void window_init(_app *p_app) {
 	p_app->win.window = glfwCreateWindow(minu32(p_app->config.width, 800), minu32(p_app->config.height, 600), p_app->config.title, NULL, NULL);
 
 #ifdef __APPLE__
+	macos_install_backdrop(glfwGetCocoaWindow(p_app->win.window));
 	if (p_app->config.blur) {
-		macos_install_backdrop(glfwGetCocoaWindow(p_app->win.window));
+		macos_install_blur(glfwGetCocoaWindow(p_app->win.window));
 	}
 	macos_set_edit_callback(on_edit_toggled);
 #endif
