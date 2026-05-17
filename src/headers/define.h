@@ -103,6 +103,12 @@ typedef uint8_t 	bool8;
 typedef void*     rawptr;
 typedef const u8* bytes;
 
+typedef u8 _dir;
+typedef enum _direction {
+	LEFT,
+	RIGHT,
+} _direction;
+
 typedef enum _FILE_TYPE {
 	_FILE_TYPE_NONE,
 	_FILE_TYPE_PNG,
@@ -161,12 +167,12 @@ typedef struct _huffman_table {
 } _huffman_table;
 
 typedef struct _huffman_table_node {
-	bool8  leaf;
-	char   code[17];         // huffman code as bit string (max 16 bits + null)
-	u16    value;
-	i32    left;             // index into ht_nodes[], -1 = none
-	i32    right;
-	i32    parent;
+	bool8 root;
+	bool8 leaf;
+	char code[17];
+	u16 value;
+	i32 child[2];
+	i32 parent;
 } _huffman_table_node;
 
 DEFINE_HT_ID_TYPE(_ht_id, u8)
@@ -182,6 +188,7 @@ DEFINE_HT_PAIR_TYPE(_ht_table, _huffman_table)
 DEFINE_HT_PAIR_TYPE(_ht_set, bool8)
 DEFINE_HT_PAIR_TYPE(_ht_root, i32)
 DEFINE_HT_PAIR_TYPE(_ht_node_count, i32)
+DEFINE_HT_PAIR_TYPE(_ht_node_cap, i32)
 DEFINE_HT_NODES_TYPE(_ht_nodes, _huffman_table_node)
 typedef struct _jpg_info {
 	u8 comp_count;
@@ -193,6 +200,7 @@ typedef struct _jpg_info {
 	_ht_table ht;
 	_ht_set ht_set;
 	_ht_root ht_root;
+	_ht_node_cap ht_node_cap;
 	_ht_node_count ht_node_count;
 	_ht_nodes ht_nodes;
 
