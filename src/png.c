@@ -3,6 +3,12 @@
 #include "headers/helper.h"
 #include "headers/png.h"
 
+void cleanup_png(_app *p_app) {
+	_png_info *p_info = (_png_info*)p_app->file.info;
+	free(p_info->idat_buf);
+	free(p_info);
+}
+
 static void read_png_ihdr(_app *p_app, bytes *p_data, _png_info *p_info) {
 	if (read_u32_be(p_data) != 13) {
 		submit_debug_message(

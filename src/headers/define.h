@@ -39,14 +39,26 @@ extern "C" {
 #define PNG_CHUNK_tRNS ('t'<<24 | 'R'<<16 | 'N'<<8 | 'S')
 #define PNG_CHUNK_gAMA ('g'<<24 | 'A'<<16 | 'M'<<8 | 'A')
 
-#define JPG_SOI   0xffd8
+#define JPG_SOI 0xffd8
 #define JPG_APP_0 0xffe0
-#define JPG_COM   0xfffe
-#define JPG_DQT   0xffdb
+#define JPG_COM 0xfffe
+#define JPG_DQT 0xffdb
 #define JPG_SOF_0 0xffc0
-#define JPG_DHT   0xffc4
-#define JPG_SOS   0xffda
-#define JPG_EOI   0xffd9
+#define JPG_SOF_1 0xffC1
+#define JPG_SOF_2 0xffC2
+#define JPG_SOF_3 0xffC3
+#define JPG_SOF_5 0xffC5 
+#define JPG_SOF_6 0xffC6
+#define JPG_SOF_7 0xffC7
+#define JPG_SOF_9 0xffC9
+#define JPG_SOF_10 0xffCA
+#define JPG_SOF_11 0xffCB
+#define JPG_SOF_13 0xffCD
+#define JPG_SOF_14 0xffCE
+#define JPG_SOF_15 0xffCF
+#define JPG_DHT 0xffc4
+#define JPG_SOS 0xffda
+#define JPG_EOI 0xffd9
 
 #define WEBP_RIFF_SIG 0x52494646
 #define WEBP_SIG 0x57454250
@@ -157,20 +169,27 @@ typedef struct _png_info {
 	usize out_size;
 } _png_info;
 
-typedef struct _huffman_table {
+typedef struct _bit_reader {
+	bytes data;
+	usize size;
+	usize byte_off;
+	u8 bit_off;   // 0..7, MSB-first
+} _bit_reader;
+
+typedef struct _huffman_tree {
 	i32  count[16];
 	u8   symbols[256];
 	i32  symbol_count;
-} _huffman_table;
+} _huffman_tree;
 
-typedef struct _huffman_table_node {
+typedef struct _huffman_tree_node {
 	bool8 root;
 	bool8 leaf;
 	char code[17];
 	u16 value;
 	i32 child[2];
 	i32 parent;
-} _huffman_table_node;
+} _huffman_tree_node;
 
 DEFINE_HT_ID_TYPE(_ht_id, u8)
 typedef struct _component {
@@ -181,12 +200,12 @@ typedef struct _component {
 	_ht_id ht_id; 
 } _component;
 
-DEFINE_HT_PAIR_TYPE(_ht_table, _huffman_table)
+DEFINE_HT_PAIR_TYPE(_ht_tree, _huffman_tree)
 DEFINE_HT_PAIR_TYPE(_ht_set, bool8)
 DEFINE_HT_PAIR_TYPE(_ht_root, i32)
 DEFINE_HT_PAIR_TYPE(_ht_node_count, i32)
 DEFINE_HT_PAIR_TYPE(_ht_node_cap, i32)
-DEFINE_HT_NODES_TYPE(_ht_nodes, _huffman_table_node)
+DEFINE_HT_NODES_TYPE(_ht_nodes, _huffman_tree_node)
 typedef struct _jpg_info {
 	u8 comp_count;
 	_component comp[3];
@@ -194,7 +213,7 @@ typedef struct _jpg_info {
 	u16 qt[4][64];
 	bool8 qt_set[4];
 
-	_ht_table ht;
+	_ht_tree ht;
 	_ht_set ht_set;
 	_ht_root ht_root;
 	_ht_node_cap ht_node_cap;
